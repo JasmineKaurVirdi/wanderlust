@@ -1,0 +1,133 @@
+<style>
+
+  .search-btn {
+    background-color: #fe424d;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0 1rem 0 1rem;
+  }
+
+  .search-btn:hover {
+    color: #fff;
+  }
+
+  .search-btn i {
+    display: inline;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .search-inp {
+    border-radius: 25px;
+    padding: 0.5rem 3rem 0.5rem 3rem;
+  }
+
+  .search-input-wrapper {
+    position: relative;
+  }
+
+  #searchSuggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    z-index: 1000;
+  }
+
+  #searchSuggestions div {
+    padding: 10px 12px;
+    cursor: pointer;
+    background: white;
+  }
+
+  #searchSuggestions div:hover {
+    background-color: #f5f5f5;
+  }
+</style>
+
+<nav class="navbar navbar-expand-md navbar-light bg-light border-bottom sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/listings"><img src="/images/Airbnb-Logo.wine.svg" alt="Airbnb-Logo" width="140"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="navbar-nav ms-auto">
+
+        <form class="d-flex flex-column flex-md-row w-100" method="GET" action="/listings">
+
+          <div class="search-input-wrapper flex-grow-1">
+            <input class="form-control me-2 search-inp"
+            type="search"
+            name="search"
+            id="searchInput"
+            placeholder="Search destinations" />
+
+            <div id="searchSuggestions"></div>
+          </div>
+
+          <button class="btn search-btn mt-2 mt-md-0 ms-md-2" type="submit">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
+
+        </form>
+
+      </div>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/listings/new">Airbnb your home</a>
+        </li>
+        <% if (!currUser) { %>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/signup"><b>Sign Up</b></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login"><b>Log in</b></a>
+          </li>
+          <% } %>
+            <% if (currUser) { %>
+              <li class="nav-item">
+                <a class="nav-link" href="/logout"><b>Log out</b></a>
+              </li>
+              <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  let searchInput = document.getElementById("searchInput");
+  let suggestions = document.getElementById("searchSuggestions");
+
+  searchInput.addEventListener("input", async () => {
+
+    let search = searchInput.value;
+
+    if (search.length === 0) {
+      suggestions.innerHTML = "";
+      return;
+    }
+
+    let response = await fetch(`/listings/search-suggestions?search=${search}`);
+    let listings = await response.json();
+
+    suggestions.innerHTML = "";
+
+    listings.forEach(listing => {
+      let option = document.createElement("div");
+
+      option.innerText = `${listing.location}, ${listing.country}`;
+
+      option.addEventListener("click", () => {
+
+        searchInput.value = listing.location;
+        searchInput.form.submit();
+
+      });
+
+      suggestions.appendChild(option);
+
+    });
+  });
+</script>
